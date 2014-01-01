@@ -37,12 +37,12 @@ import java.util.Map;
 /**
  * Created by benson on 12/31/13.
  */
-public class IndexFiles {
+public final class IndexFiles {
     private Analyzer analyzer;
     private String btroot;
     private String inputs;
 
-    public IndexFiles(String btroot, String inputs) {
+    private IndexFiles(String btroot, String inputs) {
         this.btroot = btroot;
         this.inputs = inputs;
 
@@ -78,11 +78,11 @@ public class IndexFiles {
 
     private void go() throws IOException {
         System.setProperty("bt.root", btroot);
-        setupAnalyzer();
+        analyzer = setupAnalyzer(true);
         iterateOverFiles(new File(inputs));
     }
 
-    private void setupAnalyzer() {
+    static Analyzer setupAnalyzer(final boolean filters) {
         Map<String, String> tokenizerFactoryArgs = Maps.newHashMap();
         tokenizerFactoryArgs.put("rlpContext", "rlp-context-ara.xml");
         tokenizerFactoryArgs.put("lang", "ara");
@@ -98,20 +98,28 @@ public class IndexFiles {
         final ReversedWildcardFilterFactory reversedWildcardFilterFactory = new ReversedWildcardFilterFactory(emptyOptions);
         final RemoveDuplicatesTokenFilterFactory removeDuplicatesTokenFilterFactory = new RemoveDuplicatesTokenFilterFactory(emptyOptions);
 
-        analyzer = new Analyzer() {
+        return new Analyzer() {
             @Override
             protected TokenStreamComponents createComponents(String fieldName,
                                                              Reader reader) {
-                Tokenizer source = tokenizerFactory.create(reader);
-                TokenStream filter = foldingFilterFactory.create(source);
-                filter = reversedWildcardFilterFactory.create(filter);
-                filter = removeDuplicatesTokenFilterFactory.create(filter);
-                return new TokenStreamComponents(source, filter);
+                final Tokenizer source = tokenizerFactory.create(reader);
+                if (filters) {
+                    TokenStream filter = foldingFilterFactory.create(source);
+                    filter = reversedWildcardFilterFactory.create(filter);
+                    filter = removeDuplicatesTokenFilterFactory.create(filter);
+                    return new TokenStreamComponents(source, filter);
+                } else {
+                    return new TokenStreamComponents(source);
+                }
             }
 
             @Override
             protected Reader initReader(String fieldName, Reader reader) {
-                return charFilterFactory.create(reader);
+                if (filters) {
+                    return charFilterFactory.create(reader);
+                } else {
+                    return reader;
+                }
             }
         };
     }
@@ -133,7 +141,7 @@ public class IndexFiles {
                 OffsetAttribute offsets = tokenStream.getAttribute(OffsetAttribute.class);
 
                 while (tokenStream.incrementToken()) {
-                    offsets.startOffset();
+                    System.out.println(offsets.startOffset());
                 }
             } finally {
                 IOUtils.closeQuietly(dataReader);
