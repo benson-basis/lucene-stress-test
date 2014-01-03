@@ -79,13 +79,15 @@ public final class IndexFiles {
     private void go() throws IOException {
         System.setProperty("bt.root", btroot);
         analyzer = setupAnalyzer(true);
-        iterateOverFiles(new File(inputs));
+        while (true) {
+            iterateOverFiles(new File(inputs));
+        }
     }
 
     static Analyzer setupAnalyzer(final boolean filters) {
         Map<String, String> tokenizerFactoryArgs = Maps.newHashMap();
-        tokenizerFactoryArgs.put("rlpContext", "rlp-context-ara.xml");
-        tokenizerFactoryArgs.put("lang", "ara");
+        tokenizerFactoryArgs.put("rlpContext", "rlp-context.xml");
+        tokenizerFactoryArgs.put("lang", "kor");
         tokenizerFactoryArgs.put("postLemma", "true");
         tokenizerFactoryArgs.put("postCompoundComponents", "true");
         tokenizerFactoryArgs.put("postPartOfSpeech", "true");
@@ -141,7 +143,7 @@ public final class IndexFiles {
                 OffsetAttribute offsets = tokenStream.getAttribute(OffsetAttribute.class);
 
                 while (tokenStream.incrementToken()) {
-                    System.out.println(offsets.startOffset());
+                    offsets.startOffset();
                 }
             } finally {
                 IOUtils.closeQuietly(dataReader);
