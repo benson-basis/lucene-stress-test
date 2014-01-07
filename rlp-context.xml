@@ -12,6 +12,7 @@
         <languageprocessor>Script Region Locator</languageprocessor>
         <languageprocessor>Chinese Language Analyzer</languageprocessor>
         <languageprocessor>Japanese Language Analyzer</languageprocessor>
-        <languageprocessor>Korean Language Analyzer</languageprocessor>
+        <languageprocessor>Korean Language Analyzer</languageprocessor><!--
+        <languageprocessor>Raw Notice Writer</languageprocessor>-->
     </languageprocessors>
 </contextconfig>
